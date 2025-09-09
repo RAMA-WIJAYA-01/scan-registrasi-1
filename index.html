@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Scan Registrasi Peserta</title>
+    <style>
+      :root {
+        --gap: 12px;
+        --radius: 12px;
+      }
+      body {
+        font-family: system-ui, Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .card {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: var(--radius);
+        padding: 16px;
+        max-width: 780px;
+        margin: 0 auto;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 22px;
+      }
+      .grid {
+        display: grid;
+        gap: var(--gap);
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid > * {
+        min-width: 0;
+      }
+      label {
+        font-size: 14px;
+        display: block;
+        margin-bottom: 6px;
+        color: #cbd5e1;
+      }
+      input,
+      select,
+      button,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        background: #0b1220;
+        color: #e5e7eb;
+        outline: none;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #60a5fa;
+      }
+      button {
+        cursor: pointer;
+        background: #2563eb;
+        border: none;
+        font-weight: 600;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .row {
+        display: flex;
+        gap: var(--gap);
+        align-items: center;
+      }
+      .row > * {
+        flex: 1;
+      }
+      #preview {
+        border-radius: 10px;
+        overflow: hidden;
+        background: #000;
+      }
+      #status {
+        margin-top: 10px;
+        font-size: 14px;
+      }
+      .ok {
+        color: #34d399;
+      }
+      .warn {
+        color: #fbbf24;
+      }
+      .err {
+        color: #f87171;
+      }
+      .footer {
+        opacity: 0.7;
+        font-size: 12px;
+        margin-top: 10px;
+        text-align: center;
+      }
+    </style>
+    <!-- Camera QR/Barcode -->
+    <script src="https://unpkg.com/html5-qrcode" defer></script>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Registrasi Peserta (Scan & Submit)</h1>
+
+      <div id="preview" style="height: 260px"></div>
+      <div id="status" class="warn">Menginisialisasi kamera…</div>
+
+      <div style="height: 12px"></div>
+
+      <form id="form">
+        <div class="grid">
+          <div>
+            <label>Nama</label>
+            <input id="nama" required placeholder="Nama peserta" />
+          </div>
+          <div>
+            <label>NIK</label>
+            <input id="nik" required placeholder="NIK" />
+          </div>
+          <div>
+            <label>No Peserta</label>
+            <input id="noPeserta" required placeholder="Nomor peserta" />
+          </div>
+          <div>
+            <label>Jadwal Tes</label>
+            <input id="jadwalTes" type="datetime-local" required />
+          </div>
+        </div>
+
+        <div style="height: 12px"></div>
+
+        <label>Kode Barcode (otomatis dari kamera, bisa edit manual)</label>
+        <input id="kode" placeholder="Hasil scan barcode / QR" />
+
+        <div style="height: 12px"></div>
+
+        <div class="row">
+          <button id="btnSubmit" type="submit">Konfirmasi & Simpan</button>
+          <button id="btnClear" type="button">Bersihkan</button>
+        </div>
+      </form>
+
+      <div class="footer">Data tersimpan ke Google Sheets dgn timestamp & validasi waktu.</div>
+    </div>
+
+    <script>
+      const GAS_URL = "https://script.google.com/macros/s/AKfycby41d5kM623fFZrc82ZyOqoRNI7HTAkP3TLiNEhhugPEf6z5YxoTzZ_rsITMmcQ0ldl/exec";
+
+      let lastDecodedText = "";
+      let scanner = null;
+
+      function deviceInfo() {
+        return navigator.userAgent || "unknown";
+      }
+
+      function setStatus(text, cls = "") {
+        const el = document.getElementById("status");
+        el.className = cls;
+        el.textContent = text;
+      }
+
+      async function startScanner() {
+        try {
+          const Html5Qrcode = window.Html5Qrcode;
+          if (!Html5Qrcode) {
+            setStatus("Gagal memuat library scanner.", "err");
+            return;
+          }
+          scanner = new Html5Qrcode(/* element id */ "preview");
+          const cameras = await Html5Qrcode.getCameras();
+          if (!cameras || cameras.length === 0) {
+            setStatus("Kamera tidak ditemukan.", "err");
+            return;
+          }
+          const camId = cameras.find((c) => /back|rear/i.test(c.label))?.id || cameras[0].id;
+
+          await scanner.start(
+            { deviceId: { exact: camId } },
+            {
+              fps: 10,
+              qrbox: { width: 220, height: 220 },
+              // untuk barcode 1D, library ini lebih kuat di QR; jika perlu 1D tebal, bisa tambahkan fallback input manual
+            },
+            (decodedText) => {
+              if (decodedText && decodedText !== lastDecodedText) {
+                lastDecodedText = decodedText;
+                document.getElementById("kode").value = decodedText;
+                setStatus("Kode terbaca: " + decodedText, "ok");
+              }
+            },
+            (err) => {
+              // scanning in progress (ignore frequent errors)
+            }
+          );
+          setStatus("Kamera aktif. Arahkan ke barcode/QR.", "ok");
+        } catch (e) {
+          setStatus("Gagal mengakses kamera: " + e, "err");
+        }
+      }
+
+      document.getElementById("btnClear").addEventListener("click", async () => {
+        document.getElementById("form").reset();
+        lastDecodedText = "";
+        setStatus("Form dibersihkan.", "warn");
+      });
+
+      document.getElementById("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("btnSubmit");
+        btn.disabled = true;
+
+        const payload = {
+          nama: document.getElementById("nama").value.trim(),
+          nik: document.getElementById("nik").value.trim(),
+          noPeserta: document.getElementById("noPeserta").value.trim(),
+          jadwalTes: document.getElementById("jadwalTes").value,
+          kode: document.getElementById("kode").value.trim(),
+          device: deviceInfo(),
+        };
+
+        if (!payload.nama || !payload.nik || !payload.noPeserta || !payload.jadwalTes) {
+          setStatus("Lengkapi semua field wajib.", "err");
+          btn.disabled = false;
+          return;
+        }
+
+        try {
+          const res = await fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            mode: "cors",
+            cache: "no-store",
+          });
+          const data = await res.json();
+          if (data.ok) {
+            const info = data.valid === "OUT_OF_WINDOW" ? " (di luar jam registrasi)" : "";
+            setStatus("Tersimpan. Timestamp: " + (data.ts || "") + info, data.valid === "OUT_OF_WINDOW" ? "warn" : "ok");
+          } else {
+            throw new Error(data.error || "Unknown error");
+          }
+        } catch (err) {
+          setStatus("Gagal menyimpan: " + err.message, "err");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Mulai
+      document.addEventListener("DOMContentLoaded", startScanner);
+    </script>
+  </body>
+</html>
