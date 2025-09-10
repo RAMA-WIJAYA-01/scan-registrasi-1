@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Registrasi Berhasil</title>
+  <style>
+    :root { --gap: 12px; --radius: 14px; }
+    body {
+      margin:0; padding:20px;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:#0f172a; color:#e2e8f0;
+      display:flex; align-items:center; justify-content:center; min-height:100vh;
+    }
+    .card {
+      max-width: 560px; width:100%;
+      background:#111827; border:1px solid #1f2937; border-radius:var(--radius);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      padding:22px; text-align:center;
+    }
+    h1 { margin:0 0 8px; font-size:24px; }
+    .muted { opacity:.85; font-size:14px; margin-bottom:16px; }
+    .success {
+      display:inline-flex; align-items:center; gap:10px;
+      background:rgba(34,197,94,.12); color:#34d399;
+      border:1px solid rgba(34,197,94,.35);
+      padding:10px 14px; border-radius:12px; font-weight:600; margin:8px 0 16px;
+    }
+    #qrcode { display:inline-block; padding:12px; background:#0b1220; border-radius:12px; }
+    .row { display:flex; gap:var(--gap); justify-content:center; margin-top:14px; }
+    a.btn, button.btn {
+      appearance:none; border:none; cursor:pointer; text-decoration:none;
+      padding:10px 14px; border-radius:10px; font-weight:600; color:#fff; background:#2563eb;
+    }
+    a.btn.secondary { background:#374151; }
+    .label { font-size:13px; opacity:.8; margin-top:8px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+  <!-- Library generator QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+</head>
+<body>
+  <div class="card">
+    <h1>Registrasi Berhasil</h1>
+    <div class="success">✅ Data tersimpan</div>
+    <div class="muted">Tunjukkan QR ini untuk membuka WhatsApp sesuai <strong>No Peserta</strong>.</div>
+
+    <div id="qrcode"></div>
+    <div class="label">Link WhatsApp: <span id="waLink" class="mono"></span></div>
+
+    <div class="row">
+      <a id="openWA" class="btn" target="_blank" rel="noopener">Buka WhatsApp</a>
+      <a href="index.html" class="btn secondary">Scan Lagi</a>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(location.search);
+  const no = (urlParams.get('no') || '').replace(/\s+/g,''); // No Peserta
+  if (!no) {
+    document.querySelector('.success').textContent = '⚠️ No Peserta tidak ditemukan';
+    return;
+  }
+
+  // Bangun tautan WhatsApp berdasarkan No Peserta
+  // Asumsi: No Peserta adalah nomor telepon WA tanpa tanda + (mis: 62812xxxx)
+  const wa = `https://wa.me/${encodeURIComponent(no)}`;
+
+  // Tampilkan link untuk referensi
+  const waLinkEl = document.getElementById('waLink');
+  waLinkEl.textContent = wa;
+
+  // Set tombol buka WA
+  const openWA = document.getElementById('openWA');
+  openWA.href = wa;
+
+  // Render QR code untuk link WA
+  const qrContainer = document.getElementById('qrcode');
+  new QRCode(qrContainer, {
+    text: wa,
+    width: 220,
+    height: 220,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+});
+</script>
+</body>
+</html>
