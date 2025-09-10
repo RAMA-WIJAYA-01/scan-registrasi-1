@@ -5,42 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Registrasi Berhasil</title>
   <style>
-    :root { --gap: 12px; --radius: 14px; }
-    body {
-      margin:0; padding:20px;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:#0f172a; color:#e2e8f0;
-      display:flex; align-items:center; justify-content:center; min-height:100vh;
-    }
-    .card {
-      max-width: 560px; width:100%;
-      background:#111827; border:1px solid #1f2937; border-radius:var(--radius);
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      padding:22px; text-align:center;
-    }
+    :root { --gap:12px; --radius:14px; }
+    body { margin:0; padding:20px; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:#0f172a; color:#e2e8f0; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .card { max-width:560px; width:100%; background:#111827; border:1px solid #1f2937; border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,.35); padding:22px; text-align:center; }
     h1 { margin:0 0 8px; font-size:24px; }
+    .success { display:inline-flex; align-items:center; gap:10px; background:rgba(34,197,94,.12); color:#34d399; border:1px solid rgba(34,197,94,.35); padding:10px 14px; border-radius:12px; font-weight:600; margin:8px 0 16px; }
     .muted { opacity:.85; font-size:14px; margin-bottom:16px; }
-    .success {
-      display:inline-flex; align-items:center; gap:10px;
-      background:rgba(34,197,94,.12); color:#34d399;
-      border:1px solid rgba(34,197,94,.35);
-      padding:10px 14px; border-radius:12px; font-weight:600; margin:8px 0 16px;
-    }
     #qrcode { display:inline-block; padding:12px; background:#0b1220; border-radius:12px; }
     .row { display:flex; gap:var(--gap); justify-content:center; margin-top:14px; }
     a.btn { text-decoration:none; padding:10px 14px; border-radius:10px; font-weight:600; color:#fff; background:#2563eb; }
     a.btn.secondary { background:#374151; }
     .label { font-size:13px; opacity:.8; margin-top:8px; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .err { color:#f87171; margin-top:8px; }
+    .err { color:#f87171; margin-top:10px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
 <body>
   <div class="card">
     <h1>Registrasi Berhasil</h1>
-    <div class="success" id="msg">✅ Data tersimpan</div>
-    <div class="muted">QR ini membuka WhatsApp sesuai <strong>No Peserta</strong> (diambil dari kolom <em>LINK WHATSAPP</em> di Master).</div>
+    <div class="success">✅ Data tersimpan</div>
+    <div class="muted">QR & tautan di bawah ini berasal dari kolom <strong>LINK WHATSAPP</strong> (atau fallback dari No Peserta).</div>
 
     <div id="qrcode"></div>
     <div class="label">Link WhatsApp: <span id="waLink" class="mono"></span></div>
@@ -53,47 +38,28 @@
   </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/PASTE_EXEC_ID/exec'; // sama dengan di index.html
-
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', ()=>{
   const p = new URLSearchParams(location.search);
   const no = (p.get('no') || '').trim();
-  const msg = document.getElementById('msg');
-  const err = document.getElementById('err');
+  let wa  = (p.get('wa') || '').trim();
 
-  if (!no) {
-    msg.textContent = '⚠️ No Peserta tidak ditemukan';
-    err.textContent = 'Query string "no" kosong.';
+  // Fallback: kalau wa kosong tapi ada no → buat dari nomor
+  if (!wa && no) wa = `https://wa.me/${encodeURIComponent(no.replace(/\s+/g,''))}`;
+
+  if (!wa) {
+    document.getElementById('err').textContent = 'Link WhatsApp tidak tersedia.';
     return;
   }
 
-  try {
-    // Ambil data dari Master (termasuk link WA)
-    const res = await fetch(`${GAS_URL}?action=lookup&code=${encodeURIComponent(no)}`, { cache: 'no-store' });
-    const json = await res.json();
+  document.getElementById('waLink').textContent = wa;
+  document.getElementById('openWA').href = wa;
 
-    let wa = '';
-    if (json.ok && json.found && json.data) {
-      wa = (json.data.linkWa || '').trim();
-    }
-
-    // Fallback jika kolom LINK WHATSAPP kosong → gunakan nomor langsung
-    if (!wa) wa = `https://wa.me/${encodeURIComponent(no.replace(/\s+/g,''))}`;
-
-    // Tampilkan & buat QR
-    document.getElementById('waLink').textContent = wa;
-    document.getElementById('openWA').href = wa;
-
-    new QRCode(document.getElementById('qrcode'), {
-      text: wa,
-      width: 220,
-      height: 220,
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch (e) {
-    console.error(e);
-    err.textContent = 'Gagal mengambil link WhatsApp dari Master: ' + e.message;
-  }
+  new QRCode(document.getElementById('qrcode'), {
+    text: wa,
+    width: 220,
+    height: 220,
+    correctLevel: QRCode.CorrectLevel.M
+  });
 });
 </script>
 </body>
