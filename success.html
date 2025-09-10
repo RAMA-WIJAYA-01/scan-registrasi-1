@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Registrasi Berhasil</title>
   <style>
-    :root { --gap:12px; --radius:14px; }
+    :root { --gap: 12px; --radius: 14px; }
     body { margin:0; padding:20px; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:#0f172a; color:#e2e8f0; display:flex; align-items:center; justify-content:center; min-height:100vh; }
     .card { max-width:560px; width:100%; background:#111827; border:1px solid #1f2937; border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,.35); padding:22px; text-align:center; }
     h1 { margin:0 0 8px; font-size:24px; }
@@ -25,7 +25,7 @@
   <div class="card">
     <h1>Registrasi Berhasil</h1>
     <div class="success">✅ Data tersimpan</div>
-    <div class="muted">QR & tautan di bawah ini berasal dari kolom <strong>LINK WHATSAPP</strong> (atau fallback dari No Peserta).</div>
+    <div class="muted">Tautan di bawah berasal dari kolom <strong>LINK WHATSAPP</strong> (atau fallback dari No Peserta).</div>
 
     <div id="qrcode"></div>
     <div class="label">Link WhatsApp: <span id="waLink" class="mono"></span></div>
@@ -39,17 +39,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
-  const p = new URLSearchParams(location.search);
+  const p  = new URLSearchParams(location.search);
   const no = (p.get('no') || '').trim();
-  let wa  = (p.get('wa') || '').trim();
+  let wa   = p.has('wa') ? decodeURIComponent(p.get('wa')) : '';
 
-  // Fallback: kalau wa kosong tapi ada no → buat dari nomor
+  // Jika param `wa` tidak ada / kosong, baru fallback ke nomor
   if (!wa && no) wa = `https://wa.me/${encodeURIComponent(no.replace(/\s+/g,''))}`;
 
-  if (!wa) {
-    document.getElementById('err').textContent = 'Link WhatsApp tidak tersedia.';
-    return;
-  }
+  if (!wa) { document.getElementById('err').textContent = 'Link WhatsApp tidak tersedia.'; return; }
 
   document.getElementById('waLink').textContent = wa;
   document.getElementById('openWA').href = wa;
