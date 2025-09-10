@@ -71,7 +71,7 @@
   <div class="wrap">
     <div class="card">
       <h1>Registrasi Peserta (Scan No Peserta & Auto-Isi)</h1>
-      <div class="muted">Arahkan kamera ke barcode/QR **No Peserta**. Jika ditemukan pada Master Sheet, form akan terisi otomatis.</div>
+      <div class="muted">Arahkan kamera ke barcode/QR <b>No Peserta</b>. Jika ditemukan pada Master Sheet, form akan terisi otomatis.</div>
 
       <div id="preview">
         <div class="scan-box"><div class="box" id="scanBox"></div></div>
@@ -104,13 +104,13 @@
         </div>
       </form>
 
-      <div class="footer">Kolom yang tersimpan: <em>NAMA, NIK, NO PESERTA, JADWAL, timestamp</em>. Timestamp ditambahkan saat klik “Konfirmasi & Simpan”.</div>
+      <div class="footer">Kolom tersimpan: <em>NAMA, NIK, NO PESERTA, JADWAL, LINK WHATSAPP, Timestamp</em>. Timestamp ditambahkan saat klik “Konfirmasi & Simpan”.</div>
     </div>
   </div>
 
 <script>
 /* ================== KONFIGURASI ================== */
-// Ganti dengan URL Web App dari Google Apps Script (Deploy as Web App, access: Anyone)
+// Ganti dengan URL Web App dari Google Apps Script (Deploy as Web App, Anyone)
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbz4dsQRLn2Mw-q4L9b1-bLu2HPyTQCaJRZAHuPjpdBYv9tLPrGMKTb5SK6AWxN-RXQN/exec';
 
 /* ================ UTIL & STATE =================== */
@@ -175,8 +175,7 @@ async function startScanner() {
 }
 
 /* ============== LOOKUP MASTER SHEET ============== */
-/* Barcode/QR yang dipindai dianggap berisi "NO PESERTA".
-   Kita pakai nilai ini untuk lookup ke Master dan auto-isi field lain. */
+/* Barcode/QR yang dipindai dianggap berisi "NO PESERTA". */
 async function onCodeDetected(noPeserta) {
   $('noPeserta').value = noPeserta;
   setStatus('No Peserta terbaca: ' + noPeserta + ' • mencari data…', 'warn');
@@ -196,6 +195,7 @@ async function onCodeDetected(noPeserta) {
       setStatus('No Peserta tidak ditemukan di Master Sheet. Isi manual.', 'warn');
     }
   } catch (err) {
+    console.error('GET lookup error:', err);
     setStatus('Gagal ambil data: ' + err.message, 'err');
   }
 }
@@ -222,9 +222,11 @@ $('form').addEventListener('submit', async (e) => {
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      // Pakai text/plain agar simple request (tanpa preflight)
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload),
-      mode: 'cors', cache: 'no-store'
+      mode: 'cors',
+      cache: 'no-store'
     });
     const data = await res.json();
 
@@ -240,6 +242,7 @@ $('form').addEventListener('submit', async (e) => {
       throw new Error(data.error || 'Unknown error');
     }
   } catch (err) {
+    console.error('POST error:', err);
     setStatus('Gagal menyimpan: ' + err.message, 'err');
   } finally {
     btn.disabled = false;
