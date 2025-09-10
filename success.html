@@ -64,10 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Bangun tautan WhatsApp berdasarkan No Peserta
-  // Asumsi: No Peserta adalah nomor telepon WA tanpa tanda + (mis: 62812xxxx)
+  // Asumsi: No Peserta adalah nomor WA tanpa tanda + (mis: 62812xxxx)
   const wa = `https://wa.me/${encodeURIComponent(no)}`;
 
-  // Tampilkan link untuk referensi
+  // Tampilkan link
   const waLinkEl = document.getElementById('waLink');
   waLinkEl.textContent = wa;
 
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const openWA = document.getElementById('openWA');
   openWA.href = wa;
 
-  // Render QR code untuk link WA
+  // Render QR code
   const qrContainer = document.getElementById('qrcode');
   new QRCode(qrContainer, {
     text: wa,
