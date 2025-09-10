@@ -32,14 +32,15 @@
     a.btn.secondary { background:#374151; }
     .label { font-size:13px; opacity:.8; margin-top:8px; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .err { color:#f87171; margin-top:8px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
 <body>
   <div class="card">
     <h1>Registrasi Berhasil</h1>
-    <div class="success">✅ Data tersimpan</div>
-    <div class="muted">Tunjukkan QR ini untuk membuka WhatsApp sesuai <strong>No Peserta</strong>.</div>
+    <div class="success" id="msg">✅ Data tersimpan</div>
+    <div class="muted">QR ini membuka WhatsApp sesuai <strong>No Peserta</strong> (diambil dari kolom <em>LINK WHATSAPP</em> di Master).</div>
 
     <div id="qrcode"></div>
     <div class="label">Link WhatsApp: <span id="waLink" class="mono"></span></div>
@@ -48,22 +49,51 @@
       <a id="openWA" class="btn" target="_blank" rel="noopener">Buka WhatsApp</a>
       <a href="index.html" class="btn secondary">Scan Lagi</a>
     </div>
+    <div id="err" class="err"></div>
   </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(location.search);
-  const no = (urlParams.get('no') || '').replace(/\s+/g,'');
+const GAS_URL = 'https://script.google.com/macros/s/PASTE_EXEC_ID/exec'; // sama dengan di index.html
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const p = new URLSearchParams(location.search);
+  const no = (p.get('no') || '').trim();
+  const msg = document.getElementById('msg');
+  const err = document.getElementById('err');
+
   if (!no) {
-    document.querySelector('.success').textContent = '⚠️ No Peserta tidak ditemukan';
+    msg.textContent = '⚠️ No Peserta tidak ditemukan';
+    err.textContent = 'Query string "no" kosong.';
     return;
   }
-  const wa = `https://wa.me/${encodeURIComponent(no)}`;
-  document.getElementById('waLink').textContent = wa;
-  document.getElementById('openWA').href = wa;
-  new QRCode(document.getElementById('qrcode'), {
-    text: wa, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M
-  });
+
+  try {
+    // Ambil data dari Master (termasuk link WA)
+    const res = await fetch(`${GAS_URL}?action=lookup&code=${encodeURIComponent(no)}`, { cache: 'no-store' });
+    const json = await res.json();
+
+    let wa = '';
+    if (json.ok && json.found && json.data) {
+      wa = (json.data.linkWa || '').trim();
+    }
+
+    // Fallback jika kolom LINK WHATSAPP kosong → gunakan nomor langsung
+    if (!wa) wa = `https://wa.me/${encodeURIComponent(no.replace(/\s+/g,''))}`;
+
+    // Tampilkan & buat QR
+    document.getElementById('waLink').textContent = wa;
+    document.getElementById('openWA').href = wa;
+
+    new QRCode(document.getElementById('qrcode'), {
+      text: wa,
+      width: 220,
+      height: 220,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch (e) {
+    console.error(e);
+    err.textContent = 'Gagal mengambil link WhatsApp dari Master: ' + e.message;
+  }
 });
 </script>
 </body>
