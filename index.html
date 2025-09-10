@@ -7,60 +7,30 @@
   <style>
     :root { --gap: 12px; --radius: 14px; }
     html,body { height:100%; }
-    body {
-      margin:0; padding:20px;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:#0f172a; color:#e2e8f0;
-    }
+    body { margin:0; padding:20px; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:#0f172a; color:#e2e8f0; }
     .wrap { max-width: 860px; margin: 0 auto; }
-    .card {
-      background:#111827; border:1px solid #1f2937; border-radius:var(--radius);
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      padding:18px;
-    }
+    .card { background:#111827; border:1px solid #1f2937; border-radius:var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,.35); padding:18px; }
     h1 { font-size:22px; margin:0 0 12px; }
     .muted { opacity:.8; font-size:13px; margin-bottom:12px; }
-    #preview {
-      position: relative;
-      height: 260px;
-      border-radius:12px;
-      overflow:hidden;
-      background:#000;
-    }
+    #preview { position: relative; height: 260px; border-radius:12px; overflow:hidden; background:#000; }
     #status { margin-top:10px; font-size:14px; }
-    .ok { color:#34d399; }
-    .warn { color:#fbbf24; }
-    .err { color:#f87171; }
+    .ok { color:#34d399; } .warn { color:#fbbf24; } .err { color:#f87171; }
     .grid { display:grid; gap:var(--gap); grid-template-columns: 1fr 1fr; }
     .grid > * { min-width:0; }
     label { font-size:14px; display:block; margin:8px 0 6px; color:#cbd5e1; }
-    input, select, button, textarea {
-      width:100%; padding:10px 12px; border-radius:10px;
-      border:1px solid #334155; background:#0b1220; color:#e5e7eb; outline:none;
-    }
-    input:focus, select:focus, textarea:focus { border-color:#60a5fa; }
-    .row { display:flex; gap:var(--gap); align-items:center; }
-    .row > * { flex:1; }
+    input, button { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #334155; background:#0b1220; color:#e5e7eb; outline:none; }
+    input:focus { border-color:#60a5fa; }
+    .row { display:flex; gap:var(--gap); align-items:center; } .row > * { flex:1; }
     button { cursor:pointer; background:#2563eb; border:none; font-weight:600; }
     button.secondary { background:#374151; }
     button:disabled { opacity:.6; cursor:not-allowed; }
     .footer { opacity:.7; font-size:12px; text-align:center; margin-top:10px; }
     @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
 
-    /* Overlay kotak */
-    #preview .scan-box {
-      position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
-    }
-    #preview .scan-box .box {
-      width: 220px; height: 220px; /* disetel ulang via JS */
-      border: 2px solid #60a5fa; border-radius: 10px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,.45);
-      position: relative;
-    }
-    #preview .scan-box .box::before,
-    #preview .scan-box .box::after {
-      content:""; position:absolute; width: 24px; height: 24px; border: 4px solid #60a5fa;
-    }
+    /* overlay kotak */
+    #preview .scan-box { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+    #preview .scan-box .box { width: 220px; height: 220px; border: 2px solid #60a5fa; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(0,0,0,.45); position: relative; }
+    #preview .scan-box .box::before, #preview .scan-box .box::after { content:""; position:absolute; width: 24px; height: 24px; border: 4px solid #60a5fa; }
     #preview .scan-box .box::before { border-right:0; border-bottom:0; top:-2px; left:-2px; border-radius:10px 0 0 0; }
     #preview .scan-box .box::after  { border-left:0; border-top:0; bottom:-2px; right:-2px; border-radius:0 0 10px 0; }
   </style>
@@ -70,7 +40,7 @@
   <div class="wrap">
     <div class="card">
       <h1>Registrasi Peserta (Scan No Peserta & Auto-Isi)</h1>
-      <div class="muted">Arahkan kamera ke barcode/QR <b>No Peserta</b>. Jika ditemukan pada Master Sheet, form terisi otomatis.</div>
+      <div class="muted">Arahkan kamera ke barcode/QR <b>No Peserta</b>. Jika ditemukan pada Master, form terisi otomatis.</div>
 
       <div id="preview">
         <div class="scan-box"><div class="box" id="scanBox"></div></div>
@@ -79,163 +49,102 @@
 
       <form id="form" style="margin-top:16px">
         <div class="grid">
-          <div>
-            <label>NAMA</label>
-            <input id="nama" required placeholder="Nama peserta" autocomplete="off">
-          </div>
-          <div>
-            <label>NIK</label>
-            <input id="nik" required placeholder="NIK" autocomplete="off">
-          </div>
-          <div>
-            <label>NO PESERTA (hasil scan)</label>
-            <input id="noPeserta" required placeholder="Nomor peserta" autocomplete="off">
-          </div>
-          <div>
-            <label>JADWAL</label>
-            <input id="jadwalTes" type="datetime-local" required>
-          </div>
+          <div><label>NAMA</label><input id="nama" required placeholder="Nama peserta" autocomplete="off"></div>
+          <div><label>NIK</label><input id="nik" required placeholder="NIK" autocomplete="off"></div>
+          <div><label>NO PESERTA (hasil scan)</label><input id="noPeserta" required placeholder="Nomor peserta" autocomplete="off"></div>
+          <div><label>JADWAL</label><input id="jadwalTes" type="datetime-local" required></div>
         </div>
-
         <div class="row" style="margin-top:14px">
           <button id="btnSubmit" type="submit">Konfirmasi & Simpan</button>
           <button id="btnClear" type="button" class="secondary">Bersihkan</button>
         </div>
       </form>
 
-      <div class="footer">Tersimpan ke tab <em>Form</em> dengan kolom: NAMA, NIK, NO PESERTA, JADWAL, LINK WHATSAPP, Timestamp.</div>
+      <div class="footer">Tersimpan: NAMA, NIK, NO PESERTA, JADWAL, LINK WHATSAPP, Timestamp (server).</div>
     </div>
   </div>
 
 <script>
-/* ================== KONFIGURASI ================== */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz8LTaymGhCLfbGtfqkDbqIjws2eUl1mMBym65-vxY4Ky3pYZycUyPLKexBCXWg5Deo/exec'; // ganti dengan URL /exec asli
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyPlAN8VTAzVbUvYLEUoQKfR25rBmfdCFOrw5ocL2PL4WLL9USks4xAOSecW2kGK60/exec'; // ganti dengan /exec kamu
 
-/* ================ UTIL & STATE =================== */
-let scanner = null;
-let lastDecoded = '';
-
+let scanner = null, lastDecoded = '';
 const $ = (id) => document.getElementById(id);
 const deviceInfo = () => (navigator.userAgent || 'unknown');
-function setStatus(text, cls='') { const el = $('status'); el.className = cls; el.textContent = text; }
+function setStatus(t,c=''){ const el=$('status'); el.className=c; el.textContent=t; }
 
-/* ================ SCANNER ======================== */
-async function startScanner() {
-  try {
-    const Html5Qrcode = window.Html5Qrcode;
-    if (!Html5Qrcode) { setStatus('Gagal memuat library scanner.', 'err'); return; }
+async function startScanner(){
+  try{
+    const H = window.Html5Qrcode; if(!H){ setStatus('Gagal memuat library scanner.','err'); return; }
+    scanner = new H("preview");
+    const cams = await H.getCameras(); if(!cams?.length){ setStatus('Kamera tidak ditemukan.','err'); return; }
+    const camId = cams.find(c=>/back|rear/i.test(c.label))?.id || cams[0].id;
 
-    scanner = new Html5Qrcode("preview");
-    const cameras = await Html5Qrcode.getCameras();
-    if (!cameras || cameras.length === 0) { setStatus('Kamera tidak ditemukan.', 'err'); return; }
-    const camId = cameras.find(c => /back|rear/i.test(c.label))?.id || cameras[0].id;
+    const preview = $('preview'), rect = preview.getBoundingClientRect();
+    const size = Math.floor(Math.min(rect.width,rect.height)*0.75);
+    const boxEl = $('scanBox'); boxEl.style.width=size+'px'; boxEl.style.height=size+'px';
 
-    // Ukuran kotak scan (square) responsif
-    const previewEl = $('preview');
-    const rect = previewEl.getBoundingClientRect();
-    const qrSize = Math.floor(Math.min(rect.width, rect.height) * 0.75);
+    await scanner.start({deviceId:{exact:camId}}, {fps:10, qrbox:{width:size,height:size}},
+      (text)=>{ if(text && text!==lastDecoded){ lastDecoded=text; onCodeDetected(text); } }, ()=>{});
+    setStatus('Kamera aktif. Arahkan ke barcode No Peserta.','ok');
 
-    const boxEl = $('scanBox');
-    if (boxEl) { boxEl.style.width = qrSize + 'px'; boxEl.style.height = qrSize + 'px'; }
-
-    await scanner.start(
-      { deviceId: { exact: camId } },
-      { fps: 10, qrbox: { width: qrSize, height: qrSize } },
-      (decoded) => {
-        if (decoded && decoded !== lastDecoded) {
-          lastDecoded = decoded;
-          onCodeDetected(decoded);
-        }
-      },
-      () => {}
-    );
-    setStatus('Kamera aktif. Arahkan ke barcode No Peserta.', 'ok');
-
-    window.addEventListener('resize', () => {
-      const r = previewEl.getBoundingClientRect();
-      const s = Math.floor(Math.min(r.width, r.height) * 0.75);
-      if (boxEl) { boxEl.style.width = s + 'px'; boxEl.style.height = s + 'px'; }
+    window.addEventListener('resize', ()=>{
+      const r=preview.getBoundingClientRect(); const s=Math.floor(Math.min(r.width,r.height)*0.75);
+      boxEl.style.width=s+'px'; boxEl.style.height=s+'px';
     });
-
-  } catch (e) {
-    console.error(e);
-    setStatus('Gagal mengakses kamera: ' + e, 'err');
-  }
+  }catch(e){ console.error(e); setStatus('Gagal mengakses kamera: '+e,'err'); }
 }
 
-/* ============== LOOKUP MASTER SHEET ============== */
-async function onCodeDetected(noPeserta) {
+async function onCodeDetected(noPeserta){
   $('noPeserta').value = noPeserta;
-  setStatus('No Peserta terbaca: ' + noPeserta + ' • mencari data…', 'warn');
-  try {
-    const res = await fetch(`${GAS_URL}?action=lookup&code=${encodeURIComponent(noPeserta)}`, {
-      method: 'GET',
-      cache: 'no-store'
-    });
+  setStatus('No Peserta terbaca: '+noPeserta+' • mencari data…','warn');
+  try{
+    const res = await fetch(`${GAS_URL}?action=lookup&code=${encodeURIComponent(noPeserta)}`, {cache:'no-store'});
     const json = await res.json();
-    if (json.ok && json.found) {
-      const d = json.data || {};
-      $('nama').value      = d.nama || '';
-      $('nik').value       = d.nik || '';
-      if (d.jadwalTes) $('jadwalTes').value = d.jadwalTes;
-      setStatus('Data terisi otomatis dari Master Sheet.', 'ok');
-    } else {
-      setStatus('No Peserta tidak ditemukan di Master Sheet. Isi manual.', 'warn');
+    if(json.ok && json.found){
+      const d=json.data||{};
+      $('nama').value=d.nama||''; $('nik').value=d.nik||''; if(d.jadwalTes) $('jadwalTes').value=d.jadwalTes;
+      setStatus('Data terisi otomatis dari Master Sheet.','ok');
+    }else{
+      setStatus('No Peserta tidak ditemukan di Master. Isi manual.','warn');
     }
-  } catch (err) {
-    console.error('GET lookup error:', err);
-    setStatus('Gagal ambil data: ' + err.message, 'err');
-  }
+  }catch(err){ console.error(err); setStatus('Gagal ambil data: '+err.message,'err'); }
 }
 
-/* ================== FORM SUBMIT ================== */
-$('form').addEventListener('submit', async (e) => {
+$('form').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const btn = $('btnSubmit'); btn.disabled = true;
-
-  const payload = {
-    nama: $('nama').value.trim(),
-    nik: $('nik').value.trim(),
-    noPeserta: $('noPeserta').value.trim(),
-    jadwalTes: $('jadwalTes').value,
-    device: deviceInfo()
+  const btn=$('btnSubmit'); btn.disabled=true;
+  const payload={
+    nama:$('nama').value.trim(),
+    nik:$('nik').value.trim(),
+    noPeserta:$('noPeserta').value.trim(),
+    jadwalTes:$('jadwalTes').value,
+    device:deviceInfo()
   };
-
-  if (!payload.nama || !payload.nik || !payload.noPeserta || !payload.jadwalTes) {
-    setStatus('Lengkapi semua field wajib.', 'err');
-    btn.disabled = false; return;
+  if(!payload.nama||!payload.nik||!payload.noPeserta||!payload.jadwalTes){
+    setStatus('Lengkapi semua field wajib.','err'); btn.disabled=false; return;
   }
-
-  try {
+  try{
     const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simple request (tanpa preflight)
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, // simple request (tanpa preflight)
       body: JSON.stringify(payload),
-      cache: 'no-store'
+      cache:'no-store'
     });
     const data = await res.json();
-    if (data.ok) {
+    if(data.ok){
+      const wa = encodeURIComponent(data.linkWa||'');
       const no = encodeURIComponent(payload.noPeserta);
-      window.location.href = `success.html?no=${no}`;
-    } else {
-      throw new Error(data.error || 'Unknown error');
+      // bawa NO & WA → success tidak perlu fetch lagi
+      window.location.href = `success.html?no=${no}&wa=${wa}`;
+    }else{
+      throw new Error(data.error||'Unknown error');
     }
-  } catch (err) {
-    console.error('POST error:', err);
-    setStatus('Gagal menyimpan: ' + err.message, 'err');
-  } finally {
-    btn.disabled = false;
-  }
+  }catch(err){ console.error(err); setStatus('Gagal menyimpan: '+err.message,'err'); }
+  finally{ btn.disabled=false; }
 });
 
-/* ================== ACTION BUTTONS =============== */
-$('btnClear').addEventListener('click', () => {
-  $('form').reset();
-  lastDecoded = '';
-  setStatus('Form dibersihkan.', 'warn');
-});
+$('btnClear').addEventListener('click', ()=>{ $('form').reset(); lastDecoded=''; setStatus('Form dibersihkan.','warn'); });
 
-/* ================== STARTUP ====================== */
 document.addEventListener('DOMContentLoaded', startScanner);
 </script>
 </body>
